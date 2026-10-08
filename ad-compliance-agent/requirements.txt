@@ -1,0 +1,59 @@
+# ============================================================
+# 广告合规审核 Agent — Python 依赖
+# 安装方式：pip install -r requirements.txt
+# ============================================================
+
+# ===== LangChain 核心 =====
+langchain>=0.3.0
+langchain-community>=0.3.0
+
+# ===== LLM 调用（OpenAI 兼容接口，适用于 DeepSeek / Qwen / 智谱 等）=====
+# 通过 .env 中的 OPENAI_BASE_URL 切换不同的 API 端点
+langchain-openai>=0.2.0
+openai>=1.50.0
+
+# ===== 向量数据库 =====
+chromadb>=0.5.0
+langchain-chroma>=0.2.0
+
+# ===== 本地 Embedding 模型（仅本地模型需要，在线 API 可注释掉）=====
+sentence-transformers>=3.0.0
+langchain-huggingface>=0.1.0
+
+# ===== 混合检索 =====
+jieba>=0.42.1
+rank-bm25>=0.2.2
+
+# ===== 文档处理 =====
+langchain-text-splitters>=0.3.0
+langchain-core>=0.3.0
+
+# ===== API 服务 =====
+fastapi>=0.115.0
+uvicorn[standard]>=0.30.0
+
+# ===== 配置与数据校验 =====
+python-dotenv>=1.0.0
+pyyaml>=6.0
+pydantic>=2.0.0
+pydantic-settings>=2.0.0
+
+# ===== 工具 =====
+tiktoken>=0.7.0          # Token 计算，辅助控制切片大小
+
+# ===== 测试 =====
+pytest>=8.0.0
+
+# ============================================================
+# Phase 3 扩展依赖（当前阶段不需要安装）
+# ============================================================
+# OCR 图片文字识别
+# paddleocr>=2.8.0
+# paddlepaddle>=3.0.0
+#
+# PDF 文本提取
+# pdfplumber>=0.11.0
+# pymupdf>=1.24.0
+#
+# Docker 部署
+# （在 Dockerfile 中按需安装上述依赖即可）

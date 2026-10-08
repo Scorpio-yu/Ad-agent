@@ -1,0 +1,13 @@
+# 广告合规审核 Agent — 全局配置
+
+knowledge_base:
+  chunk_size: 500
+  chunk_overlap: 50
+
+retriever:
+  top_k: 5
+
+audit:
+  model: gpt-4o
+  temperature: 0.1
+  max_tokens: 2048

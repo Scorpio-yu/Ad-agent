@@ -1,0 +1,566 @@
+Class-Aware Prompted K-BERT for Advertisement 
+Compliance Detection 
+ 
+Yu Zheng  
+College of Information Engineering 
+China Jiliang University 
+ Hangzhou, China 
+p24030854122@cjlu.edu.cn 
+ 
+Lingmin He* 
+College of Information Engineering 
+China Jiliang University 
+Hangzhou, China 
+helm@cjlu.edu.cn 
+ 
+ 
+Panzhi Zhao 
+College of Information Engineering 
+China Jiliang University 
+Hangzhou, China 
+ p24030854119@cjlu.edu.cn 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+ 
+Abstract—Advertisement compliance detection plays an 
+important role in regulating online commercial content. Although 
+pre-trained language models and knowledge-enhanced methods 
+such as K-BERT have achieved strong performance in text 
+classification, existing approaches usually rely on uniform 
+knowledge injection and lack task-oriented discriminative 
+guidance. In advertisement compliance detection, however, 
+violation identification is often dominated by surface-level lexical 
+cues, making effective decision boundary modeling particularly 
+important. To address this issue, we propose a Class-Aware 
+Prompted K-BERT framework that incorporates category-
+specific soft prompts into the K-BERT architecture. The proposed 
+method guides the model to interpret advertisement texts from a 
+compliance-aware perspective and enhances category-sensitive 
+representation learning. In addition, we redesign the visible matrix 
+to support effective interaction between prompt tokens and textual 
+representations while preserving the hierarchical structure of 
+knowledge injection. Experiments on an OCR-based e-commerce 
+advertisement 
+dataset 
+show 
+that 
+the 
+proposed 
+method 
+outperforms both BERT and K-BERT. The ablation study further 
+indicates that direct knowledge injection does not always 
+guarantee performance gains, while the proposed class-aware 
+prompt mechanism can effectively improve advertisement 
+compliance detection.  
+Keywords—advertisement compliance detection; K-BERT; class-
+aware prompt learning; knowledge-enhanced language model; e-
+commerce advertising 
+I. 
+ INTRODUCTION  
+The rapid expansion of e-commerce platforms has 
+fundamentally transformed the landscape of commercial 
+promotion. Online advertisements have become a primary 
+channel for marketing communication, influencing purchasing 
+decisions at an unprecedented scale. However, this growth has 
+also led to a proliferation of non-compliant advertising content, 
+including exaggerated claims, unverifiable efficacy statements, 
+and misleading guarantees. Such content not only undermines 
+consumer trust but also poses significant challenges for 
+regulatory enforcement. Recent studies have explored fact-
+checking 
+for 
+online 
+advertisement 
+posts[1], 
+regulatory 
+compliance analysis in social media influencer marketing[2], and 
+sensitive content classification in broader moderation settings[3]. 
+Consequently, automated advertisement compliance detection 
+has emerged as an important task in intelligent content 
+moderation systems. 
+Recent advances in pre-trained language models (PLMs) 
+have significantly improved the performance of various text 
+classification tasks. Models such as BERT[4] leverage large-scale 
+pre-training to capture contextualized semantic representations, 
+enabling strong downstream performance. To further enhance 
+semantic understanding, knowledge-enhanced models, most 
+notably K-BERT[5], incorporate structured knowledge graphs 
+into the encoding process. By injecting external knowledge into 
+the input sequence and regulating attention through a visible 
+matrix, K-BERT enriches contextual representations and 
+improves reasoning ability in tasks involving implicit semantic 
+relations. 
+Despite these advantages, the assumption that knowledge 
+injection universally benefits classification performance 
+deserves 
+reconsideration 
+in 
+domain-specific 
+scenarios. 
+Advertisement compliance detection differs from many 
+conventional language understanding tasks. In practice, 
+violation identification is often driven by explicit surface-level 
+lexical cues, such as absolute expressions (“best”, “guaranteed”), 
+exaggerated promotional claims, or implied medical effects. 
+These signals frequently serve as strong discriminative 
+indicators that can be captured directly from the original text. In 
+such cases, additional knowledge may not necessarily improve 
+classification performance and may even introduce redundant 
+semantic information, especially when the external knowledge 
+is not fully aligned with the target compliance scenario [1], [2]. 
+Motivated by this observation, we propose a Class-Aware 
+Prompted K-BERT framework for advertisement compliance 
+detection. Instead of modifying the encoder architecture, the 
+proposed method introduces label-specific soft prompt 
+
+
+embeddings to guide the model toward compliance-oriented 
+representation learning. By associating different prompts with 
+different class hypotheses, the model interprets the same 
+advertisement text from multiple decision perspectives, 
+effectively reshaping the classification space. Our design is 
+inspired by recent advances in prompt-based adaptation and 
+prompt optimization[6]- [8]. In addition, we extend the visible 
+matrix mechanism to ensure coherent interaction between 
+prompt tokens and textual representations while maintaining the 
+hierarchical structure of knowledge injection. 
+Extensive experiments on an OCR-based e-commerce 
+advertisement dataset demonstrate that the proposed framework 
+consistently outperforms the original K-BERT implementation. 
+Interestingly, strong performance is preserved even without 
+knowledge graph injection, highlighting the dominant role of 
+discriminative prompt guidance in surface-trigger-dominated 
+compliance scenarios. These findings provide new insights into 
+the interaction between prompt learning[6]-[8] and knowledge-
+enhanced architectures[5]. 
+II. 
+RELATED WORK 
+A. Advertisement Compliance Detection  
+Early studies on advertisement compliance detection mainly 
+relied on rule-based filtering and manually designed keyword 
+lists. Although such approaches can capture explicit violation 
+patterns, they often lack robustness when dealing with diverse 
+linguistic expressions. With the development of deep learning, 
+neural text classification models based on CNNs, RNNs, and 
+transformer architectures have been widely adopted for content 
+moderation tasks. In particular, pre-trained language models 
+(PLMs) such as BERT[4] have significantly improved 
+performance by leveraging large-scale contextual pre-training. 
+Recent studies have also explored online advertisement fact-
+checking, regulatory compliance analysis, and sensitive content 
+moderation in related settings[1]-[3]. However, most existing 
+methods treat compliance detection as a standard classification 
+problem 
+and 
+rarely 
+consider 
+task-specific 
+modeling 
+characteristics. 
+B. Knowledge-Enhanced Language Models 
+To enhance semantic representation, knowledge-enhanced 
+models incorporate structured knowledge graphs into language 
+models. K-BERT[5] extends BERT by injecting knowledge 
+triples into the input sequence and controlling attention through 
+a visible matrix mechanism. Such methods have shown 
+advantages in reasoning and relation extraction tasks. 
+Nevertheless, existing knowledge injection strategies typically 
+apply external knowledge uniformly to all inputs, without 
+considering whether knowledge augmentation is necessary for 
+specific classification scenarios. 
+C. Prompt Learning in Pre-trained Language Models 
+Prompt learning[6] has recently emerged as an effective 
+paradigm for adapting pre-trained language models to 
+downstream tasks. Soft prompt tuning introduces learnable 
+continuous embeddings into the input sequence, enabling 
+efficient task adaptation with limited additional parameters. 
+Prompt mechanisms have been shown to reshape decision 
+boundaries by guiding the model toward task-relevant features. 
+However, the integration of class-aware prompt design with 
+knowledge-enhanced architectures remains underexplored, 
+particularly in domain-specific compliance detection tasks. 
+III. 
+METHOD 
+A. Problem Definition 
+Given an advertisement text 𝑋= {𝑥1, 𝑥2, … , 𝑥𝑛}, the task of 
+advertisement compliance detection aims to predict its 
+compliance label 𝑦∈{0,1}, where 0 denotes compliant content 
+and 1 denotes non-compliant content. The objective is to learn a 
+classification function: 
+𝑓: 𝑋→𝑦
+(1) 
+Unlike general text classification tasks that rely on implicit 
+semantic reasoning, compliance detection in advertising 
+scenarios is often dominated by explicit surface-level lexical 
+patterns, such as exaggerated claims and absolute expressions. 
+These features act as strong discriminative signals, suggesting 
+that modeling the decision boundary effectively may be more 
+critical than enriching semantic representations through external 
+knowledge. 
+B. Revisiting K-BERT 
+K-BERT extends the standard BERT architecture by 
+injecting knowledge graph triples into the input sequence. For 
+each token associated with an entity, relevant knowledge triples 
+are expanded into a tree-like structure. The augmented input can 
+be represented as:  
+𝐻= [[𝐶𝐿𝑆], 𝑋, 𝐾]
+(2) 
+ 
+where 𝐾 denotes the knowledge-injected tokens. 
+To prevent semantic drift introduced by knowledge 
+expansion, K-BERT employs a visible matrix 𝑀to restrict 
+attention propagation. Specifically: 
+• 
+Original text tokens attend to each other globally. 
+• 
+Knowledge tokens attend only to their anchor tokens 
+and hierarchical paths. 
+• 
+Cross-branch attention is constrained. 
+Although 
+this 
+mechanism 
+enhances 
+contextual 
+representation, the knowledge injection process is uniformly 
+applied across all samples, implicitly assuming that additional 
+knowledge consistently benefits classification performance. 
+Based on the original K-BERT backbone, our method introduces 
+class-aware prompt embeddings and extends the visible matrix 
+mechanism to better support compliance-oriented representation 
+learning. The overall architecture of the proposed framework is 
+shown in Fig. 1. 
+C. Motivation for Class-Aware Prompting 
+In advertisement compliance detection, violation signals are 
+frequently explicit rather than implicit. Therefore, injecting 
+additional semantic knowledge may not always improve 
+
+
+ 
+ 
+Figure 1.  Architecture of the proposed Class-Aware Prompted K-BERT framework for advertisement compliance detection.
+performance. Instead, guiding the model to interpret text 
+from a task-specific perspective can be more beneficial. 
+Let the encoder output representation under class hypothesis 
+𝑐 be: 
+ℎ𝑐= 𝐸𝑛𝑐𝑜𝑑𝑒𝑟(𝑋; 𝜃, 𝑃𝑐)
+(3) 
+Where 𝑃𝑐 denotes a class-specific prompt embedding. By 
+associating distinct prompts with different labels, the model is 
+encouraged to construct multiple decision hypotheses over the 
+same input text. 
+This mechanism effectively reshapes the classification 
+boundary: 
+𝑦= arg max
+𝑐∈{0,1} 𝑓(ℎ𝑐)
+(4) 
+Instead of expanding semantic information through 
+knowledge injection, the proposed class-aware prompts guide 
+the model to construct multiple classification hypotheses for the 
+same input.  
+The class-aware prompt mechanism can be interpreted as 
+constructing multiple classification hypotheses for the same 
+input text. As illustrated in Fig. 2, different prompt embeddings 
+guide the encoder to produce class-specific representations. 
+D. Class-Aware Prompt Design 
+Inspired by recent advances in prompt learning and prompt 
+optimization[6]-[8], 
+we 
+introduce 
+class-specific 
+prompt 
+embeddings into the K-BERT framework. Unlike generic soft 
+prompts, our prompt embeddings are explicitly tied to class 
+hypotheses for compliance-oriented decision modeling. For a 
+binary classification task, we define two learnable prompt 
+embedding sets: 
+𝑃𝑐= {𝑝𝑐,1, 𝑝𝑐,2, . . . 𝑝𝑐,𝐿}, 𝑐∈{0,1}
+(5) 
+Each prompt embedding 𝑝𝑐,𝑖∈ℝ𝑑 shares the same 
+dimensionality as token embeddings. These embeddings are 
+initialized randomly and optimized jointly with the downstream 
+objective.  
+For each class hypothesis 𝑐, the final input sequence is 
+constructed as: 
+𝐻𝑐= [[𝐶𝐿𝑆], 𝑃𝑐, 𝑋, 𝐾]
+(6) 
+ 
+Prompt tokens are inserted immediately after the [CLS] 
+token to ensure early interaction with contextual representations. 
+E. Visible Matrix Extension 
+To preserve the structural constraints of K-BERT while 
+enabling prompt interaction, we extend the visible matrix 𝑀 as 
+follows: 
+1. 
+Prompt tokens are globally visible to [CLS] and 
+original text tokens. 
+2. 
+Knowledge 
+tokens 
+remain 
+restricted 
+to 
+their 
+corresponding anchor tokens. 
+3. 
+Prompt tokens do not directly attend to lower-level 
+knowledge nodes.  
+This design ensures that prompt embeddings function as 
+global discriminative controllers without disrupting hierarchical 
+knowledge structure. 
+
+
+ 
+Figure 2.  Illustration of the class-aware prompt hypothesis mechanism. 
+Different prompt embeddings generate class-specific representations for the 
+same advertisement text. 
+F. Training and Inference Strategy 
+During training, only the prompt corresponding to the 
+ground-truth label is activated. The classification probability is 
+computed as: 
+𝑦̂ = 𝑠𝑜𝑓𝑡𝑚𝑎𝑥(𝑊ℎCLS)
+(7) 
+ 
+The model is optimized using cross-entropy loss: 
+ℒ= −∑𝑦log 𝑦̂
+(8) 
+ 
+During inference, we adopt a prompt-enumeration strategy: 
+𝑠𝑐= 𝑓(𝐻𝑐)
+(9) 
+ 
+The final prediction is determined by selecting the class with 
+the highest score. 
+G. Complexity Analysis 
+The additional parameters introduced by class-aware 
+prompts are: 
+Δ𝑃= 𝐶× 𝐿× 𝑑
+(10) 
+ 
+Where 𝐶 is the number of classes, 𝐿 is the prompt length, and 
+𝑑 is the embedding dimension. 
+Compared with the full parameter size of BERT-based 
+models, the additional prompt parameters are negligible. The 
+computational complexity during inference increases linearly 
+with the number of classes due to prompt enumeration, which 
+remains efficient for binary classification tasks. 
+IV. 
+EXPERIMENTS 
+A. Dataset and Experimental Settings 
+To evaluate the proposed method, experiments are 
+conducted on an OCR-based e-commerce advertisement dataset. 
+The dataset is constructed by collecting advertisement images 
+from e-commerce platforms and extracting textual content 
+through optical character recognition (OCR). It contains 
+approximately 12.4k samples, with about 7.8k labeled as 0 and 
+about 4.6k labeled as 1, where label 1 denotes non-compliant 
+advertisements. The violations mainly involve exaggerated 
+claims, unverifiable efficacy descriptions, and misleading 
+guarantees. The dataset is divided into training, development, 
+and test sets with a ratio of 80%/10%/10%. For fair comparison, 
+all models were trained and evaluated under the same 
+experimental settings. Specifically, the maximum sequence 
+length was set to 256, the batch size was set to 32, the learning 
+rate was set to 2e-5, and the number of training epochs was set 
+to 10. The encoder type was set to BERT, and the first-token 
+pooling strategy was adopted for sentence representation. In 
+addition, the random seed was fixed at 7 to improve 
+reproducibility. 
+B. Compared Methods  
+To verify the contribution of each component, we compared 
+the following three models: 
+BERT: a vanilla BERT-based text classification model 
+without knowledge injection or prompt enhancement. It serves 
+as the basic pretrained language model baseline. 
+K-BERT: extends BERT by injecting structured knowledge 
+graphs into the input sequence and regulating attention through 
+a visible matrix mechanism. 
+Class-Aware Prompted K-BERT: the proposed method, 
+which extends K-BERT by introducing class-aware soft prompts. 
+Specifically, 
+class-dependent 
+prompt 
+embeddings 
+are 
+incorporated into the input representation so that the model can 
+better capture category-sensitive semantic patterns for 
+advertisement compliance detection. 
+C. Overall Performance Comparison 
+To evaluate the overall effectiveness of the proposed 
+method, we compare BERT, K-BERT, and the proposed Class-
+Aware Prompted K-BERT on the advertisement compliance 
+detection dataset. The results are reported in Table I, and Fig. 3 
+further illustrates the comparison in terms of Accuracy and F1-
+score. 
+As shown in Table I, the proposed Class-Aware Prompted 
+K-BERT achieves the best performance among all compared 
+methods. Compared with BERT and K-BERT, the proposed 
+method obtains higher Precision, Recall, F1-score, and 
+Accuracy, demonstrating the effectiveness of introducing class-
+aware 
+prompt 
+learning 
+into 
+the 
+knowledge-enhanced 
+framework. 
+ 
+
+
+ 
+Figure 3.  Performance comparison of different models on the advertisement 
+compliance detection dataset in terms of Accuracy and F1-score. 
+This improvement indicates that the class-aware prompt 
+mechanism 
+can 
+effectively 
+enhance 
+category-sensitive 
+representation learning and help the model better capture 
+discriminative semantic cues for compliance judgment. As a 
+result, the proposed method shows stronger ability in 
+distinguishing compliant and non-compliant advertisements. 
+TABLE I.  
+PERFORMANCE COMPARISON BETWEEN DIFFERENT MODELS 
+ON THE ADVERTISEMENT COMPLIANCE DETECTION DATASET. 
+Model 
+Precision 
+Recall 
+F1 
+Accuracy 
+BERT 
+87.6 
+87.7 
+87.4 
+88.5 
+K-BERT 
+90.4 
+91.0 
+90.7 
+91.3 
+Class-Aware Prompted 
+K-BERT (Ours) 
+93.0 
+92.6 
+92.7 
+93.3 
+The best results are highlighted in bold. 
+D. Ablation Study 
+To further analyze the effectiveness of different 
+components, we perform an ablation study with three variants: 
+K-BERT w/o KG, K-BERT, and Class-Aware Prompted K-
+BERT. The results are reported in Table II. 
+Interestingly, K-BERT w/o KG performs slightly better 
+than the original K-BERT, suggesting that direct knowledge 
+injection does not always lead to better performance. One 
+possible reason is that the injected knowledge may contain 
+noisy or task-irrelevant information, which interferes with the 
+original textual semantics. In this study, the domain-specific 
+knowledge graph was mainly constructed from advertising 
+regulations. Candidate triples were manually extracted from 
+legal provisions and compliance-related rules, such as “cure 
+completely”–belongs to–“absolute expression”, and further 
+reviewed by relevant experts to ensure legal validity and 
+compliance relevance. Although this process improves 
+knowledge quality, the current graph may still have limited 
+coverage and adaptability, which may partly explain the noise 
+introduced by direct knowledge injection. 
+The proposed Class-Aware Prompted K-BERT achieves 
+the best results on all metrics, demonstrating that the class-
+aware prompt mechanism can effectively enhance category-
+sensitive representation learning and improve the utilization of 
+knowledge-enhanced features. These results confirm that the 
+proposed design provides a more effective framework for 
+advertisement compliance detection. 
+TABLE II.  
+ABLATION STUDY OF DIFFERENT COMPONENTS ON 
+THE ADVERTISEMENT COMPLIANCE DETECTION DATASET. 
+Model 
+Precision 
+Recall 
+F1 
+Accuracy 
+K-BERT w/o KG 
+92.2 
+91.6 
+91.9 
+92.5 
+K-BERT 
+90.4 
+91.0 
+90.7 
+91.3 
+Class-Aware Prompted 
+K-BERT (Ours) 
+93.0 
+92.6 
+92.7 
+93.3 
+The best results are highlighted in bold. 
+V. 
+CONCLUSIONS 
+In this paper, we proposed a Class-Aware Prompted K-
+BERT framework for advertisement compliance detection. By 
+introducing class-aware prompt learning into K-BERT, the 
+proposed method enhances category-sensitive representation 
+learning and improves the discrimination between compliant 
+and non-compliant advertisements. 
+Experimental results show that the proposed method 
+outperforms both BERT and K-BERT. The ablation study 
+further indicates that direct knowledge injection does not 
+always guarantee performance gains, while the proposed class-
+aware prompt mechanism effectively improves classification 
+performance. In future work, we will explore higher-quality 
+advertisement knowledge graphs and more effective prompt 
+learning strategies. 
+ACKNOWLEDGMENT 
+The authors gratefully acknowledge the financial support 
+provided by the National Key R&D Program of China under 
+Grant No. 2023YFC3305002. 
+REFERENCES 
+[1] T. T. Nguyen, H. Nguyen Thi Phuong, T. P. Le, and B. T. Nguyen, “Fact-
+checking for online advertisement posts,” in Proc. PACLIC 38, 2024, pp. 
+398–406. Available: https://aclanthology.org/2024.paclic-1.40/. 
+[2] H. Gui, T. Bertaglia, T. Annabell, C. Goanta, T. Dooper, and G. Spanakis, 
+“Evaluating LLM-generated legal explanations for regulatory compliance 
+in social media influencer marketing,” in Proc. Natural Legal Language 
+Processing Workshop, 2025, pp. 157–171. doi: 10.18653/v1/2025.nllp-
+1.12. 
+[3] D. Antypas, I. Sen, C. Perez Almendros, J. Camacho-Collados, and F. 
+Barbieri, “Sensitive content classification in social media: A holistic 
+resource and evaluation,” in Proc. WOAH, 2025, pp. 17–31. Available: 
+https://aclanthology.org/2025.woah-1.2/. 
+[4] J. Devlin, M.-W. Chang, K. Lee, and K. Toutanova, “BERT: Pre-training 
+of deep bidirectional transformers for language understanding,” in Proc. 
+NAACL-HLT, 2019, pp. 4171–4186. doi: 10.18653/V1/N19-1423.  
+[5] W. Liu, P. Zhou, Z. Zhao, Z. Wang, Q. Ju, H. Deng, and P. Wang, “K-
+BERT: Enabling language representation with knowledge graph,” in Proc. 
+AAAI,vol.34,no.3,2020,pp.2901 2908.doi:10.1609/aaai.v34i03.5681. 
+[6] X. Liu, K. Ji, Y. Fu, W. Tam, Z. Du, Z. Yang, and J. Tang, “P-Tuning: 
+Prompt tuning can be comparable to fine-tuning across scales and tasks,” 
+in Proc. ACL 2022 (Short Papers), 2022, pp. 61–68. doi: 
+10.18653/v1/2022.acl-short.8. 
+[7] D. Soylu, C. Potts, and O. Khattab, “Fine-tuning and prompt optimization: 
+Two great steps that work better together,” in Proc. EMNLP 2024, Miami, 
+Florida, USA, 2024, pp. 10696–10710. doi: 10.18653/v1/2024.emnlp-
+main.597. 
+[8] D. Ji, Y. Yang, L. Liu, P. Shu, H. Wu, S. Tang, X. Chen, S. Ma, T. Chen, 
+and L. Zhu, “RAVEN++: Pinpointing fine-grained violations in 
+advertisement videos with active reinforcement reasoning,” in Proc. 
+EMNLP 
+2025: 
+Industry 
+Track, 
+2025, 
+pp. 
+1–10. 
+doi: 
+10.18653/v1/2025.emnlp-industry.
+ 
+
+

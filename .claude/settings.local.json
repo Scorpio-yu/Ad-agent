@@ -1,0 +1,29 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pip install *)",
+      "Bash(python -c ' *)",
+      "Bash(python scripts/build_knowledge_base.py)",
+      "Bash(python *)",
+      "Bash(pip uninstall *)",
+      "Bash(./venv/Scripts/python -m pip install -r requirements.txt -q)",
+      "Bash(./venv/Scripts/python -m pip install --upgrade pip -q)",
+      "Bash(conda update *)",
+      "Bash(export HF_ENDPOINT=https://hf-mirror.com)",
+      "Bash(pip show *)",
+      "Bash(echo \"exit: $?\")",
+      "Bash(curl -s http://localhost:8000/ -o /dev/null -w \"%{http_code} %{content_type}\")",
+      "Bash(curl -s http://localhost:8000/static/js/app.js -o /dev/null -w \"JS: %{http_code}\")",
+      "Bash(curl -s http://localhost:8000/static/css/style.css -o /dev/null -w \"CSS: %{http_code}\")",
+      "Bash(curl -s -X POST http://localhost:8000/api/v1/audit -H \"Content-Type: application/json\" -d '{\"ad_content\":\"全网最低价，绝对正品\"}')",
+      "Bash(./venv/Scripts/python -c ' *)",
+      "Bash(pkill -f \"uvicorn src.api.app:app\")",
+      "Bash(./venv/Scripts/python -m uvicorn src.api.app:app --host 0.0.0.0 --port 8000)",
+      "Bash(ls \"C:/Users/24945/.cache/huggingface/hub/models--sentence-transformers--all-MiniLM-L6-v2/\" 2>/dev/null && echo \"---cached---\" || echo \"---not cached---\")",
+      "Read(//c/Users/24945/.cache/huggingface/hub/models--sentence-transformers--all-MiniLM-L6-v2/**)",
+      "Bash(powershell -Command 'Get-Process | Where-Object { $_.ProcessName -like '\\\\''*python*'\\\\'' -or $_.ProcessName -like '\\\\''*uvicorn*'\\\\'' } | Stop-Process -Force')",
+      "Bash(powershell -Command 'Get-Process | Where-Object { $_.ProcessName -like '\\\\''*python*'\\\\'' } | Stop-Process -Force')",
+      "Bash(./venv/Scripts/python.exe -c ' *)"
+    ]
+  }
+}

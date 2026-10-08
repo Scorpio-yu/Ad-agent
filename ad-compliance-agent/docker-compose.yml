@@ -1,0 +1,15 @@
+# Docker Compose — 分发版（对方无源码，直接用镜像）
+version: "3.9"
+
+services:
+  ad-compliance:
+    image: ad-compliance-agent:latest
+    container_name: ad-compliance-agent
+    ports:
+      - "8000:8000"
+    env_file:
+      - .env
+    volumes:
+      # 持久化知识库（容器重启不丢数据）
+      - ./data/chroma_db:/app/data/chroma_db
+    restart: unless-stopped
